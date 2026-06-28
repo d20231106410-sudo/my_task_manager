@@ -22,14 +22,13 @@ class TaskService {
     await _tasksRef.add(task.toMap());
   }
 
-  Stream<List<Task>> getUserTasks() {
-    return _tasksRef
-        .where('userId', isEqualTo: _uid)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList());
-  }
+ Stream<List<Task>> getUserTasks() {
+  return _tasksRef
+      .where('userId', isEqualTo: _uid)
+      .snapshots()
+      .map((snapshot) =>
+          snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList());
+}
 
   Future<void> updateTask(String taskId, String title, String description) async {
     await _tasksRef.doc(taskId).update({
