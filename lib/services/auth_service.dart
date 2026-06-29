@@ -4,16 +4,27 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
-
   User? get currentUser => _auth.currentUser;
 
-  // Register with email & password
-  Future<UserCredential> register(String email, String password) async {
+  String get displayName {
+    final user = _auth.currentUser;
+    if (user == null) return '';
+    if (user.displayName != null && user.displayName!.isNotEmpty) {
+      return user.displayName!;
+    }
+    return user.email?.split('@').first ?? '';
+  }
+
+  Future<UserCredential> register(String email, String password, String name) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final cred = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
+      // Save the name as displayName in Firebase Auth
+      await cred.user?.updateDisplayName(name.trim());
+      await cred.user?.reload();
+      return cred;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -30,26 +41,21 @@ class AuthService {
     }
   }
 
+
   Future<void> logout() async {
     await _auth.signOut();
   }
 
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
-      case 'user-not-found':
-        return 'No account found with this email.';
-      case 'wrong-password':
-        return 'Incorrect password. Please try again.';
-      case 'email-already-in-use':
-        return 'An account with this email already exists.';
-      case 'weak-password':
-        return 'Password must be at least 6 characters.';
-      case 'invalid-email':
-        return 'Please enter a valid email address.';
-      case 'too-many-requests':
-        return 'Too many attempts. Please try again later.';
-      default:
-        return e.message ?? 'An error occurred. Please try again.';
+      case 'user-not-found':      return 'No account found with this email.';
+      case 'wrong-password':      return 'Incorrect password. Please try again.';
+      case 'email-already-in-use':return 'An account with this email already exists.';
+      case 'weak-password':       return 'Password must be at least 6 characters.';
+      case 'invalid-email':       return 'Please enter a valid email address.';
+      case 'invalid-credential':  return 'Invalid email or password.';
+      case 'too-many-requests':   return 'Too many attempts. Please try again later.';
+      default: return e.message ?? 'An error occurred. Please try again.';
     }
   }
 }

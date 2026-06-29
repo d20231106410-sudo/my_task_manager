@@ -48,7 +48,7 @@ class AuthGate extends StatelessWidget {
                     height: 72,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppTheme.primary, AppTheme.accent],
+                        colors: [AppTheme.primary, AppTheme.primaryLight],
                       ),
                       borderRadius: BorderRadius.circular(22),
                     ),
@@ -63,13 +63,11 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        // Logged in → Task list
-        if (snapshot.hasData && snapshot.data != null) {
-          return const TaskListScreen();
-        }
+      if (snapshot.hasData && snapshot.data != null) {
+        return const TaskListScreen();
+      }
 
-        // Not logged in → Login
-        return const LoginScreen();
+return const LoginScreen();
       },
     );
   }
